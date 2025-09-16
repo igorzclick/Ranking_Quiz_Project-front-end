@@ -10,10 +10,11 @@ import {
   Field,
   Text,
 } from '@chakra-ui/react';
-import { loginUser, isAuthenticated } from '../../apis/login';
+import { loginPlayer, isAuthenticated } from '../../apis/login';
 import { Link, useNavigate } from 'react-router';
 import { toaster } from '../../components/ui/toaster';
 import { Link as ChakraLink } from '@chakra-ui/react';
+import logo from '../../assets/logo.png';
 
 export const SignInView = () => {
   const [formData, setFormData] = useState({
@@ -27,7 +28,7 @@ export const SignInView = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
-  
+
   // redireciona se tiver autenticado
   useEffect(() => {
     if (isAuthenticated()) {
@@ -55,8 +56,8 @@ export const SignInView = () => {
     }
     setIsLoading(true);
     try {
-      const data = await loginUser({ ...formData });
-      localStorage.setItem('token', data.token);
+      const data = await loginPlayer({ ...formData });
+      localStorage.setItem('token', data.access_token);
       toaster.success({
         title: 'Login realizado com sucesso',
         description: 'Bem-vindo de volta!',
@@ -73,8 +74,6 @@ export const SignInView = () => {
     }
   };
 
-  const handleCancel = () => {};
-
   return (
     <Center w='100%' h='100vh'>
       <form
@@ -82,15 +81,10 @@ export const SignInView = () => {
           e.preventDefault();
           handleLogin();
         }}>
-        <Card.Root width='320px'>
+        <Card.Root width='520px'>
           <Card.Body gap='4'>
-            <Center w='100%' h='100%'>
-              <Avatar.Root size='lg' shape='rounded'>
-                <Avatar.Image src='../../public/board-game.ico' alt='' />
-                <Center w='100%' h='100%'>
-                  <img src='../../public/board-game.ico' alt='' />
-                </Center>
-              </Avatar.Root>
+            <Center w='100%'>
+              <img src={logo} style={{ width: '100px', objectFit: 'cover' }} />
             </Center>
 
             <Card.Title>Login</Card.Title>
