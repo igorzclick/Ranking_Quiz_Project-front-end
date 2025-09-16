@@ -1,23 +1,24 @@
-import { SignInView } from '../pages/SignIn/SignIn.view';
-import { SignUpView } from '../pages/SignUp/SignUp.view';
-import { createBrowserRouter } from 'react-router';
-import { PrivateRouteProvider } from './components/PrivateRouteProvider';
+import { SignInView } from "../pages/SignIn/SignIn.view";
+import { SignUpView } from "../pages/SignUp/SignUp.view";
+import { HomeView } from "../pages/Home/Home.view";
+import { createBrowserRouter } from "react-router";
+import { PrivateRouteProvider } from "./components/PrivateRouteProvider";
 
 export const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: (
       <PrivateRouteProvider>
-        <h1>Home</h1>
+        <HomeView />
       </PrivateRouteProvider>
     ),
   },
   {
-    path: '/login',
+    path: "/login",
     element: <SignInView />,
   },
   {
-    path: '/register',
+    path: "/register",
     element: <SignUpView />,
   },
 ]);
