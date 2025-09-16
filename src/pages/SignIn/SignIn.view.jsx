@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Avatar,
   Button,
@@ -10,7 +10,7 @@ import {
   Field,
   Text,
 } from '@chakra-ui/react';
-import { loginUser } from '../../apis/login';
+import { loginUser, isAuthenticated } from '../../apis/login';
 import { Link, useNavigate } from 'react-router';
 import { toaster } from '../../components/ui/toaster';
 import { Link as ChakraLink } from '@chakra-ui/react';
@@ -27,6 +27,13 @@ export const SignInView = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  
+  // redireciona se tiver autenticado
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/');
+    }
+  }, [navigate]);
 
   const validateForm = () => {
     let errors = {};

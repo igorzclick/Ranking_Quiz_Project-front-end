@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import logo from '../../assets/logo.png';
+import React, { useState, useEffect } from "react";
+import logo from "../../assets/logo.png";
 import {
   Avatar,
   Button,
@@ -10,69 +10,80 @@ import {
   Toast,
   Field,
   Text,
-} from '@chakra-ui/react';
-import { loginUser } from '../../apis/login';
-import { Link, useNavigate } from 'react-router';
-import { toaster } from '../../components/ui/toaster';
-import { Link as ChakraLink } from '@chakra-ui/react';
+} from "@chakra-ui/react";
+import { registerUser, isAuthenticated } from "../../apis/login";
+import { Link, useNavigate } from "react-router";
+import { toaster } from "../../components/ui/toaster";
+import { Link as ChakraLink } from "@chakra-ui/react";
 
 export const SignUpView = () => {
   const [formData, setFormData] = useState({
-    nickname: '',
-    email: '',
-    password: '',
-    passwordConfirm: '',
+    nickname: "",
+    email: "",
+    password: "",
+    passwordConfirm: "",
   });
   const [errors, setErrors] = useState({
-    nickname: '',
-    email: '',
-    password: '',
-    passwordConfirm: '',
+    nickname: "",
+    email: "",
+    password: "",
+    passwordConfirm: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
+  // redireciona se tiver autenticado
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/");
+    }
+  }, [navigate]);
+
   const validateForm = () => {
     let errors = {};
     if (!formData.nickname) {
-      errors.nickname = 'Nickname é obrigatório';
+      errors.nickname = "Nickname é obrigatório";
     }
     if (!formData.email) {
-      errors.email = 'Email é obrigatório';
+      errors.email = "Email é obrigatório";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = 'Email inválido';
+      errors.email = "Email inválido";
     }
     if (!formData.password) {
-      errors.password = 'Senha é obrigatória';
+      errors.password = "Senha é obrigatória";
     } else if (formData.password.length < 6) {
-      errors.password = 'Senha deve ter pelo menos 6 caracteres';
+      errors.password = "Senha deve ter pelo menos 6 caracteres";
     }
     if (formData.password !== formData.passwordConfirm) {
-      errors.passwordConfirm = 'As senhas não coincidem';
+      errors.passwordConfirm = "As senhas não coincidem";
     }
     setErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     if (!validateForm()) {
       return;
     }
     setIsLoading(true);
     try {
-      const data = await loginUser({ ...formData });
-      localStorage.setItem('token', data.token);
-      toaster.success({
-        title: 'Login realizado com sucesso',
-        description: 'Bem-vindo de volta!',
+      const data = await registerUser({
+        nickname: formData.nickname,
+        email: formData.email,
+        password: formData.password,
       });
-      navigate('/');
+      localStorage.setItem("token", data.token);
+      toaster.success({
+        title: "Cadastro realizado com sucesso",
+        description: "Bem-vindo ao Think Fast!",
+      });
+      navigate("/");
     } catch (err) {
       toaster.error({
-        title: 'Erro ao realizar login',
+        title: "Erro ao realizar cadastro",
         description:
-          err?.response?.data?.message || 'Tente novamente mais tarde',
+          err?.response?.data?.message || "Tente novamente mais tarde",
       });
     } finally {
       setIsLoading(false);
@@ -82,16 +93,17 @@ export const SignUpView = () => {
   const handleCancel = () => {};
 
   return (
-    <Center w='100%'>
+    <Center w="100%">
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          handleLogin();
-        }}>
-        <Card.Root width='320px'>
-          <Card.Body gap='2'>
-            <Center w='100%'>
-              <img src={logo} style={{ width: '100px', objectFit: 'cover' }} />
+          handleRegister();
+        }}
+      >
+        <Card.Root width="320px">
+          <Card.Body gap="2">
+            <Center w="100%">
+              <img src={logo} style={{ width: "100px", objectFit: "cover" }} />
             </Center>
 
             <Card.Title>Cadastro de usuário</Card.Title>
@@ -99,13 +111,13 @@ export const SignUpView = () => {
               Crie sua conta e comece a jogar!
             </Card.Description>
 
-            <Stack gap='2'>
+            <Stack gap="2">
               <Field.Root invalid={!!errors.nickname}>
                 <Field.Label>Nickname</Field.Label>
                 <Input
-                  placeholder='Insira seu nickname'
+                  placeholder="Insira seu nickname"
                   onChange={(e) => {
-                    setErrors({ ...errors, nickname: '' });
+                    setErrors({ ...errors, nickname: "" });
                     setFormData({ ...formData, nickname: e.target.value });
                   }}
                 />
@@ -113,12 +125,12 @@ export const SignUpView = () => {
                   <Field.ErrorText>{errors.nickname}</Field.ErrorText>
                 )}
               </Field.Root>
-              <Field.Root invalid={!!errors.email} colorPalette={'purple'}>
+              <Field.Root invalid={!!errors.email} colorPalette={"purple"}>
                 <Field.Label>Email</Field.Label>
                 <Input
-                  placeholder='Insira seu email'
+                  placeholder="Insira seu email"
                   onChange={(e) => {
-                    setErrors({ ...errors, email: '' });
+                    setErrors({ ...errors, email: "" });
                     setFormData({ ...formData, email: e.target.value });
                   }}
                 />
@@ -129,10 +141,10 @@ export const SignUpView = () => {
               <Field.Root invalid={!!errors.password}>
                 <Field.Label>Senha</Field.Label>
                 <Input
-                  placeholder='Insira sua senha'
-                  type='password'
+                  placeholder="Insira sua senha"
+                  type="password"
                   onChange={(e) => {
-                    setErrors({ ...errors, password: '' });
+                    setErrors({ ...errors, password: "" });
                     setFormData({ ...formData, password: e.target.value });
                   }}
                 />
@@ -143,10 +155,10 @@ export const SignUpView = () => {
               <Field.Root invalid={!!errors.passwordConfirm}>
                 <Field.Label>Confirmar Senha</Field.Label>
                 <Input
-                  placeholder='Confirme sua senha'
-                  type='password'
+                  placeholder="Confirme sua senha"
+                  type="password"
                   onChange={(e) => {
-                    setErrors({ ...errors, passwordConfirm: '' });
+                    setErrors({ ...errors, passwordConfirm: "" });
                     setFormData({
                       ...formData,
                       passwordConfirm: e.target.value,
@@ -160,22 +172,23 @@ export const SignUpView = () => {
             </Stack>
 
             <Text>
-              Ja possui uma conta?{' '}
+              Ja possui uma conta?{" "}
               <ChakraLink asChild>
-                <Link to='/login'>Entrar</Link>
+                <Link to="/login">Entrar</Link>
               </ChakraLink>
             </Text>
           </Card.Body>
 
-          <Card.Footer flex flexDirection={'column'} gap='2'>
+          <Card.Footer flex flexDirection={"column"} gap="2">
             <Button
-              type='submit'
-              width={'100%'}
+              type="submit"
+              width={"100%"}
               isLoading={isLoading}
-              disabled={isLoading}>
+              disabled={isLoading}
+            >
               Cadastrar
             </Button>
-            <Button variant='outline' onClick={handleCancel} width={'100%'}>
+            <Button variant="outline" onClick={handleCancel} width={"100%"}>
               Voltar
             </Button>
           </Card.Footer>
