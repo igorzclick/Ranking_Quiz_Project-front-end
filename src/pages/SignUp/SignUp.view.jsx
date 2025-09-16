@@ -1,84 +1,186 @@
-import React, { useState } from "react";
-import { Avatar, Button, Card, Input, Stack, Center } from "@chakra-ui/react";
-import { Provider } from "../../components/ui/provider";
-import { loginUser } from "../../apis/login";
+import React, { useState } from 'react';
+import logo from '../../assets/logo.png';
+import {
+  Avatar,
+  Button,
+  Card,
+  Input,
+  Stack,
+  Center,
+  Toast,
+  Field,
+  Text,
+} from '@chakra-ui/react';
+import { loginUser } from '../../apis/login';
+import { Link, useNavigate } from 'react-router';
+import { toaster } from '../../components/ui/toaster';
+import { Link as ChakraLink } from '@chakra-ui/react';
 
 export const SignUpView = () => {
-   const [email, setEmail] = useState("");
-  const [nickname, setNickname] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [formData, setFormData] = useState({
+    nickname: '',
+    email: '',
+    password: '',
+    passwordConfirm: '',
+  });
+  const [errors, setErrors] = useState({
+    nickname: '',
+    email: '',
+    password: '',
+    passwordConfirm: '',
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  // chamada do login
+  const navigate = useNavigate();
+
+  const validateForm = () => {
+    let errors = {};
+    if (!formData.nickname) {
+      errors.nickname = 'Nickname é obrigatório';
+    }
+    if (!formData.email) {
+      errors.email = 'Email é obrigatório';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = 'Email inválido';
+    }
+    if (!formData.password) {
+      errors.password = 'Senha é obrigatória';
+    } else if (formData.password.length < 6) {
+      errors.password = 'Senha deve ter pelo menos 6 caracteres';
+    }
+    if (formData.password !== formData.passwordConfirm) {
+      errors.passwordConfirm = 'As senhas não coincidem';
+    }
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleLogin = async () => {
+    if (!validateForm()) {
+      return;
+    }
+    setIsLoading(true);
     try {
-      const data = await loginUser(nickname, password, email);
-      console.log("Usuário logado:", data);
-      // aqui você pode redirecionar ou salvar token no localStorage
+      const data = await loginUser({ ...formData });
+      localStorage.setItem('token', data.token);
+      toaster.success({
+        title: 'Login realizado com sucesso',
+        description: 'Bem-vindo de volta!',
+      });
+      navigate('/');
     } catch (err) {
-      console.error("Erro detalhado:", err);
-      alert("Erro ao fazer login: " + (err?.message || "Tente novamente"));
+      toaster.error({
+        title: 'Erro ao realizar login',
+        description:
+          err?.response?.data?.message || 'Tente novamente mais tarde',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // chamada do cancel
-  const handleCancel = () => {
-    // clearForm(setNickname, setPassword, setEmail, setPasswordConfirm);
-  };
+  const handleCancel = () => {};
 
   return (
-    <Center w="100%" h="100vh">
-      <Card.Root width="320px">
-        <Card.Body gap="4">
-          <Center w="100%" h="100%">
-          <Avatar.Root size="lg" shape="rounded" >
-            <Avatar.Image src="../../public/board-game.ico" alt="" />
-            <Center w="100%" h="100%">
-              <img src="../../public/board-game.ico" alt="" />
+    <Center w='100%'>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleLogin();
+        }}>
+        <Card.Root width='320px'>
+          <Card.Body gap='2'>
+            <Center w='100%'>
+              <img src={logo} style={{ width: '100px', objectFit: 'cover' }} />
             </Center>
-          </Avatar.Root>
-          </Center>
-          
-          <Card.Title mt="2">Cadastro de usuário</Card.Title>
-          <Card.Description>
-            Crie sua conta e comece a jogar!
-          </Card.Description>
 
-          {/* Campos */}
-          <Stack gap="3" mt="4">
-            <Input
-              placeholder="Nickname"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-            />
-             <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Input
-              type="password"
-              placeholder="Senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <Input
-              type="password"
-              placeholder="Confirmar Senha"
-              value={passwordConfirm}
-              onChange={(e) => setPasswordConfirm(e.target.value)}
-            />
-          </Stack>
-        </Card.Body>
+            <Card.Title>Cadastro de usuário</Card.Title>
+            <Card.Description>
+              Crie sua conta e comece a jogar!
+            </Card.Description>
 
-        <Card.Footer justifyContent="flex-end" gap="2">
-          <Button variant="outline" onClick={handleCancel}>
-            Cancelar
-          </Button>
-          <Button onClick={handleLogin}>Entrar</Button>
-        </Card.Footer>
-      </Card.Root> 
+            <Stack gap='2'>
+              <Field.Root invalid={!!errors.nickname}>
+                <Field.Label>Nickname</Field.Label>
+                <Input
+                  placeholder='Insira seu nickname'
+                  onChange={(e) => {
+                    setErrors({ ...errors, nickname: '' });
+                    setFormData({ ...formData, nickname: e.target.value });
+                  }}
+                />
+                {errors.nickname && (
+                  <Field.ErrorText>{errors.nickname}</Field.ErrorText>
+                )}
+              </Field.Root>
+              <Field.Root invalid={!!errors.email} colorPalette={'purple'}>
+                <Field.Label>Email</Field.Label>
+                <Input
+                  placeholder='Insira seu email'
+                  onChange={(e) => {
+                    setErrors({ ...errors, email: '' });
+                    setFormData({ ...formData, email: e.target.value });
+                  }}
+                />
+                {errors.email && (
+                  <Field.ErrorText>{errors.email}</Field.ErrorText>
+                )}
+              </Field.Root>
+              <Field.Root invalid={!!errors.password}>
+                <Field.Label>Senha</Field.Label>
+                <Input
+                  placeholder='Insira sua senha'
+                  type='password'
+                  onChange={(e) => {
+                    setErrors({ ...errors, password: '' });
+                    setFormData({ ...formData, password: e.target.value });
+                  }}
+                />
+                {errors.password && (
+                  <Field.ErrorText>{errors.password}</Field.ErrorText>
+                )}
+              </Field.Root>
+              <Field.Root invalid={!!errors.passwordConfirm}>
+                <Field.Label>Confirmar Senha</Field.Label>
+                <Input
+                  placeholder='Confirme sua senha'
+                  type='password'
+                  onChange={(e) => {
+                    setErrors({ ...errors, passwordConfirm: '' });
+                    setFormData({
+                      ...formData,
+                      passwordConfirm: e.target.value,
+                    });
+                  }}
+                />
+                {errors.passwordConfirm && (
+                  <Field.ErrorText>{errors.passwordConfirm}</Field.ErrorText>
+                )}
+              </Field.Root>
+            </Stack>
+
+            <Text>
+              Ja possui uma conta?{' '}
+              <ChakraLink asChild>
+                <Link to='/login'>Entrar</Link>
+              </ChakraLink>
+            </Text>
+          </Card.Body>
+
+          <Card.Footer flex flexDirection={'column'} gap='2'>
+            <Button
+              type='submit'
+              width={'100%'}
+              isLoading={isLoading}
+              disabled={isLoading}>
+              Cadastrar
+            </Button>
+            <Button variant='outline' onClick={handleCancel} width={'100%'}>
+              Voltar
+            </Button>
+          </Card.Footer>
+        </Card.Root>
+      </form>
     </Center>
   );
 };
