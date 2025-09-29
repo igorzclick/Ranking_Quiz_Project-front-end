@@ -1,48 +1,53 @@
-import React from "react";
-import { Button, Center, Card, Text } from "@chakra-ui/react";
-import { useNavigate } from "react-router";
-import { logout } from "../../apis/login";
-import { toaster } from "../../components/ui/toaster";
-import logo from "../../assets/logo.png";
+import React from 'react';
+import {
+  Button,
+  Center,
+  Card,
+  Text,
+  Container,
+  Box,
+  VStack,
+} from '@chakra-ui/react';
+import { useNavigate } from 'react-router';
 
 export const HomeView = () => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    toaster.success({
-      title: "Logout realizado com sucesso",
-      description: "Você foi deslogado com sucesso!",
-    });
-    navigate("/login");
-  };
-
   return (
-    <Center w="100%" h="100vh">
-      <Card.Root width="520px">
-        <Card.Body gap="4">
-          <Center w="100%">
-            <img src={logo} style={{ width: "100px", objectFit: "cover" }} />
-          </Center>
+    <Center h='100vh' w='100%' flexDirection='column'>
+      <Center w='100%'>
+        <Text fontSize={'3xl'}>Bem-vindo ao Think Fast</Text>
+      </Center>
+      <Center w='100%'>
+        <Text fontSize={'medium'}>Escolha uma opção abaixo</Text>
+      </Center>
 
-          <Card.Title>Bem-vindo!</Card.Title>
+      <Box
+        // minH='100vh'
+        display='flex'
+        alignItems='center'
+        justifyContent='center'
+        p={4}
+        gap={4}>
+        <Button
+          w='300px'
+          h='150px'
+          fontSize='xl'
+          borderRadius='md'
+          variant={'subtle'}>
+          Jogar
+        </Button>
 
-          <Text textAlign="center" color="gray.600">
-            Você está logado com sucesso!
-          </Text>
-        </Card.Body>
-
-        <Card.Footer flex flexDirection={"column"} gap="2">
-          <Button
-            onClick={handleLogout}
-            width={"100%"}
-            colorScheme="red"
-            variant="outline"
-          >
-            Logout
-          </Button>
-        </Card.Footer>
-      </Card.Root>
+        <Button
+          w='300px'
+          h='150px'
+          fontSize='xl'
+          borderRadius='md'
+          variant={'subtle'}
+          onClick={() => navigate('/themes')}>
+          Temas
+        </Button>
+      </Box>
     </Center>
   );
 };
