@@ -16,7 +16,9 @@ export const HomeView = () => {
   return (
     <Center h='100vh' w='100%' flexDirection='column'>
       <Center w='100%'>
-        <Text fontSize={'3xl'}>Bem-vindo ao Think Fast</Text>
+        <Text fontSize={'3xl'} fontWeight='bold'>
+          Bem-vindo ao Think Fast
+        </Text>
       </Center>
       <Center w='100%'>
         <Text fontSize={'medium'}>Escolha uma opção abaixo</Text>

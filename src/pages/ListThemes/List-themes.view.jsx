@@ -62,19 +62,26 @@ export const ListThemesView = () => {
   };
 
   return (
-    <Box p={8} minH='100vh' bg='gray.900'>
-      {/* Header */}
-      <HStack justifyContent='space-between' mb={6}>
+    <Box>
+      <Box
+        justifyContent='space-between'
+        mb={6}
+        css={{
+          display: {
+            base: 'block',
+            sm: 'flex',
+          },
+        }}>
         <Button onClick={handleVoltar} variant='plain'>
           <IoIosArrowBack /> Voltar
         </Button>
-        <Text fontSize='3xl' fontWeight='bold' color='whiteAlpha.900'>
+        <Text fontSize='3xl' fontWeight='bold'>
           Lista de Temas
         </Text>
         <Button onClick={handleCadastrarTema}>
           <IoAddCircleOutline /> Cadastrar Novo Tema
         </Button>
-      </HStack>
+      </Box>
 
       <Field.Root mb={6}>
         <Switch.Root
