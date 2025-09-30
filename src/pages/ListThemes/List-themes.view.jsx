@@ -112,7 +112,7 @@ export const ListThemesView = () => {
 
             <HStack mt={4} spacing={2}>
               <Button colorScheme='teal'>Selecionar</Button>
-              {tema.created_by === userId && (
+              {/* {tema.created_by === userId && (
                 <Button
                   onClick={() => navigate(`/themes/${tema.id}`)}
                   variant='outline'>
@@ -127,7 +127,7 @@ export const ListThemesView = () => {
                   colorScheme='red'>
                   Excluir
                 </Button>
-              )}
+              )} */}
             </HStack>
           </Box>
         ))}

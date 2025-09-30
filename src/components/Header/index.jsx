@@ -17,7 +17,7 @@ export const Header = () => {
       alignItems={'center'}>
       <Text>{player.username}</Text>
       <Button onClick={handleLogout} variant={'plain'}>
-        Logout
+        Sair
       </Button>
     </Box>
   );
