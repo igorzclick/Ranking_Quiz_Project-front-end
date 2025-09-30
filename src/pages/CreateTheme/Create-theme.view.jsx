@@ -10,11 +10,12 @@ import {
   NativeSelect,
   Card,
   Center,
+  RadioGroup,
 } from '@chakra-ui/react';
 import { toaster } from '../../components/ui/toaster';
 import { useNavigate } from 'react-router';
 import { IoIosArrowBack } from 'react-icons/io';
-import { createTheme } from '../../apis/create_theme';
+import { createTheme } from '../../apis/theme';
 
 export const CreateThemeView = () => {
   const [titulo, setTitulo] = useState('');
@@ -122,11 +123,13 @@ export const CreateThemeView = () => {
           placeholder='Título do tema'
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
+          maxLength={50}
         />
         <Textarea
           placeholder='Descrição do tema'
           value={descricao}
           onChange={(e) => setDescricao(e.target.value)}
+          maxLength={255}
         />
 
         {/* Cadastro de perguntas */}
@@ -141,29 +144,34 @@ export const CreateThemeView = () => {
               setNovaPergunta({ ...novaPergunta, descricao: e.target.value })
             }
             mb={3}
+            maxLength={100}
           />
 
           <Text fontWeight='medium' mb={2}>
             Alternativas:
           </Text>
-          <VStack align='stretch'>
-            {novaPergunta.alternativas.map((alt, i) => (
-              <HStack key={i}>
-                <input
-                  type='radio'
-                  name='correta'
-                  checked={alt.correta}
-                  onChange={() => handleAlternativaCorreta(i)}
-                />
-                <Input
-                  placeholder={`Alternativa ${i + 1}`}
-                  value={alt.texto}
-                  onChange={(e) => handleAlternativaChange(i, e.target.value)}
-                />
-              </HStack>
-            ))}
-          </VStack>
+          <RadioGroup.Root
+            value={novaPergunta.alternativas.findIndex((a) => a.correta)}
+            onValueChange={(e) => handleAlternativaCorreta(e.value)}>
+            <VStack align='stretch'>
+              {novaPergunta.alternativas.map((alt, i) => (
+                <HStack key={i}>
+                  <RadioGroup.Item value={i} isChecked={alt.correta} key={i}>
+                    <RadioGroup.ItemHiddenInput />
+                    <RadioGroup.ItemIndicator />
+                    <RadioGroup.ItemText>Correta</RadioGroup.ItemText>
+                  </RadioGroup.Item>
 
+                  <Input
+                    placeholder={`Alternativa ${i + 1}`}
+                    value={alt.texto}
+                    onChange={(e) => handleAlternativaChange(i, e.target.value)}
+                    maxLength={100}
+                  />
+                </HStack>
+              ))}
+            </VStack>
+          </RadioGroup.Root>
           <Text mt={4} fontWeight='medium'>
             Dificuldade:
           </Text>
