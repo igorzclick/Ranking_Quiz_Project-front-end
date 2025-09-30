@@ -8,14 +8,6 @@ import { ListThemesView } from '../pages/ListThemes/List-themes.view';
 
 export const router = createBrowserRouter([
   {
-    path: '/',
-    element: (
-      // <PrivateRouteProvider>
-      <HomeView />
-      // </PrivateRouteProvider>
-    ),
-  },
-  {
     path: '/login',
     element: <SignInView />,
   },
@@ -24,11 +16,27 @@ export const router = createBrowserRouter([
     element: <SignUpView />,
   },
   {
+    path: '/',
+    element: (
+      <PrivateRouteProvider>
+        <HomeView />
+      </PrivateRouteProvider>
+    ),
+  },
+  {
     path: '/themes',
-    element: <ListThemesView />,
+    element: (
+      <PrivateRouteProvider>
+        <ListThemesView />
+      </PrivateRouteProvider>
+    ),
   },
   {
     path: '/themes/create',
-    element: <CreateThemeView />,
+    element: (
+      <PrivateRouteProvider>
+        <CreateThemeView />
+      </PrivateRouteProvider>
+    ),
   },
 ]);

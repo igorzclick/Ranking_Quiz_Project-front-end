@@ -58,6 +58,7 @@ export const SignInView = () => {
     try {
       const data = await loginPlayer({ ...formData });
       localStorage.setItem('token', data.access_token);
+      localStorage.setItem('player', JSON.stringify(data.player));
       toaster.success({
         title: 'Login realizado com sucesso',
         description: 'Bem-vindo de volta!',

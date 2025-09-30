@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
 import {
-  ChakraProvider,
   Box,
   VStack,
   Input,
   Textarea,
   Button,
   Text,
-  Select,
   HStack,
-  RadioGroup,
-  Toast,
   NativeSelect,
   Card,
   Center,
@@ -18,6 +14,7 @@ import {
 import { toaster } from '../../components/ui/toaster';
 import { useNavigate } from 'react-router';
 import { IoIosArrowBack } from 'react-icons/io';
+import { createTheme } from '../../apis/create_theme';
 
 export const CreateThemeView = () => {
   const [titulo, setTitulo] = useState('');
@@ -28,6 +25,7 @@ export const CreateThemeView = () => {
     alternativas: Array(5).fill({ texto: '', correta: false }),
     dificuldade: 'facil',
   });
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -69,22 +67,11 @@ export const CreateThemeView = () => {
       toaster.error({ title: 'Selecione a alternativa correta' });
       return;
     }
-    const dificuldade = novaPergunta.dificuldade;
-    const perguntasFiltradas = perguntas.filter(
-      (p) => p.dificuldade === dificuldade
-    );
-
-    if (perguntasFiltradas.length >= 8) {
-      toaster.error({
-        title: 'Limite de perguntas atingido para essa dificuldade',
-      });
-      return;
-    }
 
     setPerguntas([...perguntas, novaPergunta]);
     setNovaPergunta({
       descricao: '',
-      alternativas: Array(5).fill({ texto: '' }),
+      alternativas: Array(5).fill({ texto: '', correta: false }),
       dificuldade: 'facil',
     });
     toaster.success({ title: 'Pergunta adicionada!' });
@@ -94,34 +81,29 @@ export const CreateThemeView = () => {
     setPerguntas((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Validação das quantidades
-  const validarQuantidade = () => {
-    const faceis = perguntas.filter((p) => p.dificuldade === 'facil').length;
-    const medias = perguntas.filter((p) => p.dificuldade === 'media').length;
-    const dificeis = perguntas.filter(
-      (p) => p.dificuldade === 'dificil'
-    ).length;
-
-    return faceis === 8 && medias === 8 && dificeis === 4;
-  };
-
   // Submeter formulário
-  const handleSubmit = () => {
-    if (!validarQuantidade()) {
-      toaster.error({
-        title: 'Distribuição inválida',
-        description: 'Necessário 8 fáceis, 8 médias e 4 difíceis',
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+
+      const response = await createTheme({
+        name: titulo,
+        description: descricao,
+        perguntas,
       });
-      return;
+
+      toaster.success({ title: 'Tema cadastrado com sucesso!' });
+      console.log('Tema criado:', response);
+
+      navigate('/themes');
+    } catch (error) {
+      toaster.error({
+        title: 'Erro ao salvar tema',
+        description: error.response?.data?.message || 'Tente novamente',
+      });
+    } finally {
+      setLoading(false);
     }
-
-    console.log({
-      titulo,
-      descricao,
-      perguntas,
-    });
-
-    toaster.success({ title: 'Tema cadastrado com sucesso!' });
   };
 
   return (
@@ -164,26 +146,23 @@ export const CreateThemeView = () => {
           <Text fontWeight='medium' mb={2}>
             Alternativas:
           </Text>
-          <RadioGroup.Root
-            value={novaPergunta.alternativas.findIndex((a) => a.correta)}
-            onValueChange={(e) => handleAlternativaCorreta(e.value)}>
-            <VStack align='stretch'>
-              {novaPergunta.alternativas.map((alt, i) => (
-                <HStack key={i}>
-                  <RadioGroup.Item value={i} isChecked={alt.correta} key={i}>
-                    <RadioGroup.ItemHiddenInput />
-                    <RadioGroup.ItemIndicator />
-                    <RadioGroup.ItemText>Correta</RadioGroup.ItemText>
-                  </RadioGroup.Item>
-                  <Input
-                    placeholder={`Alternativa ${i + 1}`}
-                    value={alt.texto}
-                    onChange={(e) => handleAlternativaChange(i, e.target.value)}
-                  />
-                </HStack>
-              ))}
-            </VStack>
-          </RadioGroup.Root>
+          <VStack align='stretch'>
+            {novaPergunta.alternativas.map((alt, i) => (
+              <HStack key={i}>
+                <input
+                  type='radio'
+                  name='correta'
+                  checked={alt.correta}
+                  onChange={() => handleAlternativaCorreta(i)}
+                />
+                <Input
+                  placeholder={`Alternativa ${i + 1}`}
+                  value={alt.texto}
+                  onChange={(e) => handleAlternativaChange(i, e.target.value)}
+                />
+              </HStack>
+            ))}
+          </VStack>
 
           <Text mt={4} fontWeight='medium'>
             Dificuldade:
@@ -203,6 +182,7 @@ export const CreateThemeView = () => {
             </NativeSelect.Field>
             <NativeSelect.Indicator />
           </NativeSelect.Root>
+
           <Button mt={4} colorScheme='teal' onClick={adicionarPergunta}>
             Adicionar Pergunta
           </Button>
@@ -234,10 +214,12 @@ export const CreateThemeView = () => {
           ))}
         </Box>
 
-        <Button onClick={handleSubmit} isDisabled={perguntas.length !== 20}>
-          Salvar Tema
+        <Button onClick={handleSubmit} isLoading={loading} colorScheme='green'>
+          {loading ? 'Salvando...' : 'Salvar Tema'}
         </Button>
       </VStack>
     </Box>
   );
 };
+
+export default CreateThemeView;

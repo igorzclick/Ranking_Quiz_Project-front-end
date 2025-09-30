@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Checkbox,
   Field,
   HStack,
   SimpleGrid,
@@ -9,57 +8,53 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useColorModeValue } from '../../components/ui/color-mode';
 import { IoAddCircleOutline } from 'react-icons/io5';
 import { IoIosArrowBack } from 'react-icons/io';
 import { useNavigate } from 'react-router';
-
-const temas = [
-  {
-    id: 1,
-    nome: 'História',
-    descricao: 'Perguntas sobre eventos históricos',
-    meuTema: true,
-  },
-  {
-    id: 2,
-    nome: 'Ciência',
-    descricao: 'Perguntas sobre biologia, química e física',
-    meuTema: false,
-  },
-  {
-    id: 3,
-    nome: 'Geografia',
-    descricao: 'Perguntas sobre países, cidades e mapas',
-    meuTema: true,
-  },
-  {
-    id: 4,
-    nome: 'Entretenimento',
-    descricao: 'Filmes, séries e música',
-    meuTema: false,
-  },
-];
+import { getThemes } from '../../apis/create_theme';
+import { toaster } from '../../components/ui/toaster';
 
 export const ListThemesView = () => {
   const [mostrarMeusTemas, setMostrarMeusTemas] = useState(false);
-  const navigate = useNavigate();
+  const [temas, setTemas] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  const navigate = useNavigate();
   const cardBg = useColorModeValue('gray.700', 'gray.800');
   const cardText = useColorModeValue('white', 'whiteAlpha.900');
 
+  // Buscar temas do backend
+  useEffect(() => {
+    const fetchThemes = async () => {
+      try {
+        setLoading(true);
+        const data = await getThemes();
+        setTemas(data.themes || []);
+      } catch (error) {
+        toaster.error({
+          title: 'Erro ao buscar temas',
+          description: error.response?.data?.message || 'Tente novamente',
+        });
+        setTemas([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchThemes();
+  }, []);
+
+  // Filtrar apenas meus temas
+  const userId = JSON.parse(localStorage.getItem('player')).id;
   const temasFiltrados = mostrarMeusTemas
-    ? temas.filter((tema) => tema.meuTema)
+    ? temas.filter((t) => t.created_by === userId)
     : temas;
 
-  const handleCadastrarTema = () => {
-    navigate('/themes/create');
-  };
+  const handleCadastrarTema = () => navigate('/themes/create');
+  const handleVoltar = () => navigate(-1);
 
-  const handleVoltar = () => {
-    navigate(-1);
-  };
+  if (loading) return <Text>Carregando temas...</Text>;
 
   return (
     <Box>
@@ -67,10 +62,7 @@ export const ListThemesView = () => {
         justifyContent='space-between'
         mb={6}
         css={{
-          display: {
-            base: 'block',
-            sm: 'flex',
-          },
+          display: { base: 'block', sm: 'flex' },
         }}>
         <Button onClick={handleVoltar} variant='plain'>
           <IoIosArrowBack /> Voltar
@@ -89,12 +81,11 @@ export const ListThemesView = () => {
           checked={mostrarMeusTemas}
           onCheckedChange={({ checked }) => setMostrarMeusTemas(checked)}>
           <Switch.HiddenInput />
+          Mostrar apenas meus Temas
           <Switch.Control />
-          <Switch.Label>Mostrar apenas meus temas</Switch.Label>
         </Switch.Root>
       </Field.Root>
 
-      {/* Listagem de temas */}
       <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={6}>
         {temasFiltrados.map((tema) => (
           <Box
@@ -109,16 +100,34 @@ export const ListThemesView = () => {
             _hover={{ shadow: 'lg' }}>
             <VStack align='start' spacing={3}>
               <Text fontSize='xl' fontWeight='bold' color={cardText}>
-                {tema.nome}
+                {tema.name}
               </Text>
               <Text fontSize='sm' color='gray.300'>
-                {tema.descricao}
+                {tema.description}
               </Text>
+              {/* <Text fontSize='xs' color='gray.400'>
+                {tema.questions?.length || 0} perguntas
+              </Text> */}
             </VStack>
 
             <HStack mt={4} spacing={2}>
               <Button colorScheme='teal'>Selecionar</Button>
-              {tema.meuTema && <Button variant={'outline'}>Editar</Button>}
+              {tema.created_by === userId && (
+                <Button
+                  onClick={() => navigate(`/themes/${tema.id}`)}
+                  variant='outline'>
+                  Editar
+                </Button>
+              )}
+
+              {tema.created_by === userId && (
+                <Button
+                  onClick={() => navigate(`/themes/${tema.id}`)}
+                  variant='outline'
+                  colorScheme='red'>
+                  Excluir
+                </Button>
+              )}
             </HStack>
           </Box>
         ))}

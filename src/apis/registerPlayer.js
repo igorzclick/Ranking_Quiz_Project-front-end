@@ -2,7 +2,7 @@ import { api } from './config';
 
 export async function registerPlayer({ nickname, email, password }) {
   const response = await api.post('/player/register', {
-    nickname,
+    username: nickname,
     email,
     password,
   });

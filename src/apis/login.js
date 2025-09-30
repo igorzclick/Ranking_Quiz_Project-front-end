@@ -2,7 +2,7 @@ import { api } from './config';
 
 export async function loginPlayer({ nickname, password }) {
   const response = await api.post('/auth/login', {
-    nickname,
+    username: nickname,
     password,
   });
   return response.data;
