@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Center,
   Field,
   HStack,
   SimpleGrid,
@@ -13,8 +14,8 @@ import { useColorModeValue } from '../../components/ui/color-mode';
 import { IoAddCircleOutline } from 'react-icons/io5';
 import { IoIosArrowBack } from 'react-icons/io';
 import { useNavigate } from 'react-router';
-import { getThemes } from '../../apis/create_theme';
 import { toaster } from '../../components/ui/toaster';
+import { deleteTheme, getThemes } from '../../apis/theme';
 
 export const ListThemesView = () => {
   const [mostrarMeusTemas, setMostrarMeusTemas] = useState(false);
@@ -25,34 +26,48 @@ export const ListThemesView = () => {
   const cardBg = useColorModeValue('gray.700', 'gray.800');
   const cardText = useColorModeValue('white', 'whiteAlpha.900');
 
-  // Buscar temas do backend
-  useEffect(() => {
-    const fetchThemes = async () => {
-      try {
-        setLoading(true);
-        const data = await getThemes();
-        setTemas(data.themes || []);
-      } catch (error) {
-        toaster.error({
-          title: 'Erro ao buscar temas',
-          description: error.response?.data?.message || 'Tente novamente',
-        });
-        setTemas([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchThemes();
-  }, []);
+  const fetchThemes = async () => {
+    try {
+      setLoading(true);
+      const data = await getThemes();
+      setTemas(data?.themes || []);
+    } catch (error) {
+      toaster.error({
+        title: 'Erro ao buscar temas',
+        description: error.response?.data?.message || 'Tente novamente',
+      });
+      setTemas([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filtrar apenas meus temas
-  const userId = JSON.parse(localStorage.getItem('player')).id;
+  const userId = JSON.parse(localStorage.getItem('player'))?.id;
   const temasFiltrados = mostrarMeusTemas
-    ? temas.filter((t) => t.created_by === userId)
+    ? temas?.filter((t) => t.created_by === userId)
     : temas;
 
   const handleCadastrarTema = () => navigate('/themes/create');
   const handleVoltar = () => navigate(-1);
+
+  const handleDeleteTheme = async (id) => {
+    deleteTheme(id)
+      .then(() => {
+        toaster.success({ title: 'Tema deletado com sucesso!' });
+        fetchThemes();
+      })
+      .catch((error) => {
+        toaster.error({
+          title: 'Erro ao deletar tema',
+          description: error.response?.data?.message || 'Tente novamente',
+        });
+      });
+  };
+
+  useEffect(() => {
+    fetchThemes();
+  }, []);
 
   if (loading) return <Text>Carregando temas...</Text>;
 
@@ -86,6 +101,14 @@ export const ListThemesView = () => {
         </Switch.Root>
       </Field.Root>
 
+      {temasFiltrados.length === 0 && (
+        <Center width={'100%'}>
+          <Text fontSize='xl' fontWeight='bold'>
+            Nenhum tema encontrado
+          </Text>
+        </Center>
+      )}
+
       <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={6}>
         {temasFiltrados.map((tema) => (
           <Box
@@ -93,7 +116,7 @@ export const ListThemesView = () => {
             bg={cardBg}
             borderRadius='md'
             shadow='md'
-            p={5}
+            p={2}
             display='flex'
             flexDirection='column'
             justifyContent='space-between'
@@ -105,16 +128,16 @@ export const ListThemesView = () => {
               <Text fontSize='sm' color='gray.300'>
                 {tema.description}
               </Text>
-              {/* <Text fontSize='xs' color='gray.400'>
-                {tema.questions?.length || 0} perguntas
-              </Text> */}
+              <Text fontSize='sm' color='gray.300'>
+                Criado por: {tema.creator}
+              </Text>
             </VStack>
 
-            <HStack mt={4} spacing={2}>
-              <Button colorScheme='teal'>Selecionar</Button>
-              {/* {tema.created_by === userId && (
+            <HStack mt={4} spacing={2} wrap={'wrap'}>
+              <Button colorScheme='teal'>Jogar</Button>
+              {tema.created_by === userId && (
                 <Button
-                  onClick={() => navigate(`/themes/${tema.id}`)}
+                  onClick={() => navigate(`/themes/update/${tema.id}`)}
                   variant='outline'>
                   Editar
                 </Button>
@@ -122,12 +145,12 @@ export const ListThemesView = () => {
 
               {tema.created_by === userId && (
                 <Button
-                  onClick={() => navigate(`/themes/${tema.id}`)}
+                  onClick={() => handleDeleteTheme(tema.id)}
                   variant='outline'
                   colorScheme='red'>
                   Excluir
                 </Button>
-              )} */}
+              )}
             </HStack>
           </Box>
         ))}

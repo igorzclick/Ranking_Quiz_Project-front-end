@@ -13,5 +13,19 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('player');
+      window.location.reload();
+    }
+    return Promise.reject(error);
+  }
 );

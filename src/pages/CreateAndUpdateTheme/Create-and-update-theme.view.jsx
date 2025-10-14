@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   VStack,
@@ -10,24 +10,26 @@ import {
   NativeSelect,
   Card,
   Center,
+  RadioGroup,
 } from '@chakra-ui/react';
 import { toaster } from '../../components/ui/toaster';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { IoIosArrowBack } from 'react-icons/io';
-import { createTheme } from '../../apis/create_theme';
+import { createTheme, getThemeById, updateTheme } from '../../apis/theme';
 
-export const CreateThemeView = () => {
+export const CreateAndUpdateThemeView = () => {
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [perguntas, setPerguntas] = useState([]);
   const [novaPergunta, setNovaPergunta] = useState({
     descricao: '',
     alternativas: Array(5).fill({ texto: '', correta: false }),
-    dificuldade: 'facil',
+    dificuldade: 'easy',
   });
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { themeId } = useParams();
 
   const handleVoltar = () => {
     navigate(-1);
@@ -72,7 +74,7 @@ export const CreateThemeView = () => {
     setNovaPergunta({
       descricao: '',
       alternativas: Array(5).fill({ texto: '', correta: false }),
-      dificuldade: 'facil',
+      dificuldade: 'easy',
     });
     toaster.success({ title: 'Pergunta adicionada!' });
   };
@@ -83,28 +85,87 @@ export const CreateThemeView = () => {
 
   // Submeter formulário
   const handleSubmit = async () => {
-    try {
-      setLoading(true);
+    setLoading(true);
 
-      const response = await createTheme({
+    if (themeId) {
+      updateTheme({
+        id: themeId,
         name: titulo,
         description: descricao,
-        perguntas,
-      });
-
-      toaster.success({ title: 'Tema cadastrado com sucesso!' });
-      console.log('Tema criado:', response);
-
-      navigate('/themes');
-    } catch (error) {
-      toaster.error({
-        title: 'Erro ao salvar tema',
-        description: error.response?.data?.message || 'Tente novamente',
-      });
-    } finally {
-      setLoading(false);
+        questions: perguntas.map((pergunta) => ({
+          text: pergunta.descricao,
+          difficulty: pergunta.dificuldade,
+          answers: pergunta.alternativas.map((alternativa, index) => ({
+            text: alternativa.texto,
+            is_correct: alternativa.correta,
+            order: index + 1,
+          })),
+        })),
+      })
+        .then(() => {
+          setLoading(false);
+          toaster.success({ title: 'Tema atualizado com sucesso!' });
+        })
+        .catch(() => {
+          toaster.error({
+            title: 'Erro ao atualizar tema',
+            description: 'Tente novamente',
+          });
+        });
+    } else {
+      createTheme({
+        name: titulo,
+        description: descricao,
+        questions: perguntas.map((pergunta) => ({
+          text: pergunta.descricao,
+          difficulty: pergunta.dificuldade,
+          answers: pergunta.alternativas.map((alternativa, index) => ({
+            text: alternativa.texto,
+            is_correct: alternativa.correta,
+            order: index + 1,
+          })),
+        })),
+      })
+        .then(() => {
+          setLoading(false);
+          toaster.success({ title: 'Tema cadastrado com sucesso!' });
+        })
+        .catch(() => {
+          toaster.error({
+            title: 'Erro ao cadastrar tema',
+            description: 'Tente novamente',
+          });
+        });
     }
+
+    navigate('/themes');
   };
+
+  useEffect(() => {
+    if (themeId) {
+      getThemeById(themeId)
+        .then((response) => {
+          setTitulo(response.name);
+          setDescricao(response.description);
+          setPerguntas(
+            response.questions.map((pergunta) => ({
+              descricao: pergunta.text,
+              dificuldade: pergunta.difficulty,
+              alternativas: pergunta.answers.map((alternativa) => ({
+                texto: alternativa.text,
+                correta: alternativa.is_correct,
+              })),
+            }))
+          );
+        })
+        .catch((error) => {
+          toaster.error({
+            title: 'Erro ao buscar tema',
+            description: error.response?.data?.message || 'Tente novamente',
+          });
+        });
+    }
+  }, [themeId]);
 
   return (
     <Box p={8} width={'100%'}>
@@ -113,7 +174,7 @@ export const CreateThemeView = () => {
       </Button>
       <Center width={'100%'}>
         <Text fontSize='3xl' fontWeight='bold'>
-          Cadastrar Novo Tema
+          {themeId ? 'Atualizar Tema' : 'Cadastrar Novo Tema'}
         </Text>
       </Center>
       <VStack spacing={6} align='stretch' maxW='800px' mx='auto' mt={4}>
@@ -122,11 +183,13 @@ export const CreateThemeView = () => {
           placeholder='Título do tema'
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
+          maxLength={50}
         />
         <Textarea
           placeholder='Descrição do tema'
           value={descricao}
           onChange={(e) => setDescricao(e.target.value)}
+          maxLength={255}
         />
 
         {/* Cadastro de perguntas */}
@@ -141,29 +204,34 @@ export const CreateThemeView = () => {
               setNovaPergunta({ ...novaPergunta, descricao: e.target.value })
             }
             mb={3}
+            maxLength={100}
           />
 
           <Text fontWeight='medium' mb={2}>
             Alternativas:
           </Text>
-          <VStack align='stretch'>
-            {novaPergunta.alternativas.map((alt, i) => (
-              <HStack key={i}>
-                <input
-                  type='radio'
-                  name='correta'
-                  checked={alt.correta}
-                  onChange={() => handleAlternativaCorreta(i)}
-                />
-                <Input
-                  placeholder={`Alternativa ${i + 1}`}
-                  value={alt.texto}
-                  onChange={(e) => handleAlternativaChange(i, e.target.value)}
-                />
-              </HStack>
-            ))}
-          </VStack>
+          <RadioGroup.Root
+            value={novaPergunta.alternativas.findIndex((a) => a.correta)}
+            onValueChange={(e) => handleAlternativaCorreta(e.value)}>
+            <VStack align='stretch'>
+              {novaPergunta.alternativas.map((alt, i) => (
+                <HStack key={i}>
+                  <RadioGroup.Item value={i} isChecked={alt.correta} key={i}>
+                    <RadioGroup.ItemHiddenInput />
+                    <RadioGroup.ItemIndicator />
+                    <RadioGroup.ItemText>Correta</RadioGroup.ItemText>
+                  </RadioGroup.Item>
 
+                  <Input
+                    placeholder={`Alternativa ${i + 1}`}
+                    value={alt.texto}
+                    onChange={(e) => handleAlternativaChange(i, e.target.value)}
+                    maxLength={100}
+                  />
+                </HStack>
+              ))}
+            </VStack>
+          </RadioGroup.Root>
           <Text mt={4} fontWeight='medium'>
             Dificuldade:
           </Text>
@@ -176,9 +244,9 @@ export const CreateThemeView = () => {
                   dificuldade: e.target.value,
                 })
               }>
-              <option value='facil'>Fácil</option>
-              <option value='media'>Média</option>
-              <option value='dificil'>Difícil</option>
+              <option value='easy'>Fácil</option>
+              <option value='medium'>Média</option>
+              <option value='hard'>Difícil</option>
             </NativeSelect.Field>
             <NativeSelect.Indicator />
           </NativeSelect.Root>
@@ -222,4 +290,4 @@ export const CreateThemeView = () => {
   );
 };
 
-export default CreateThemeView;
+export default CreateAndUpdateThemeView;

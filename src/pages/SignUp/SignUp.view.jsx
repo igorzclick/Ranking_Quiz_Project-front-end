@@ -15,7 +15,7 @@ import { isAuthenticated } from '../../apis/login';
 import { Link, useNavigate } from 'react-router';
 import { toaster } from '../../components/ui/toaster';
 import { Link as ChakraLink } from '@chakra-ui/react';
-import { registerPlayer } from '../../apis/registerPlayer';
+import { registerPlayer } from '../../apis/player';
 
 export const SignUpView = () => {
   const [formData, setFormData] = useState({

@@ -4,9 +4,9 @@ export async function createQuestion({
   text,
   difficulty,
   theme_id,
-  explanation,
-  time_limit,
-  points,
+  explanation = '',
+  time_limit = 30,
+  points = 10,
 }) {
   const response = await api.post('/question/register', {
     text,
