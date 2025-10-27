@@ -21,6 +21,7 @@ export const ListThemesView = () => {
   const [mostrarMeusTemas, setMostrarMeusTemas] = useState(false);
   const [temas, setTemas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [gameMode, setGameMode] = useState(null);
 
   const navigate = useNavigate();
   const cardBg = useColorModeValue('gray.700', 'gray.800');
@@ -67,6 +68,11 @@ export const ListThemesView = () => {
 
   useEffect(() => {
     fetchThemes();
+    // Retrieve game mode from localStorage
+    const storedGameMode = localStorage.getItem('gameMode');
+    if (storedGameMode) {
+      setGameMode(JSON.parse(storedGameMode));
+    }
   }, []);
 
   if (loading) return <Text>Carregando temas...</Text>;
@@ -82,9 +88,17 @@ export const ListThemesView = () => {
         <Button onClick={handleVoltar} variant='plain'>
           <IoIosArrowBack /> Voltar
         </Button>
-        <Text fontSize='3xl' fontWeight='bold'>
-          Lista de Temas
-        </Text>
+        <VStack spacing={1}>
+          <Text fontSize='3xl' fontWeight='bold'>
+            Lista de Temas
+          </Text>
+          {gameMode && (
+            <Text fontSize='sm' color='gray.400'>
+              Modo de jogo: {gameMode.name} ({gameMode.players} jogador
+              {gameMode.players > 1 ? 'es' : ''})
+            </Text>
+          )}
+        </VStack>
         <Button onClick={handleCadastrarTema}>
           <IoAddCircleOutline /> Cadastrar Novo Tema
         </Button>

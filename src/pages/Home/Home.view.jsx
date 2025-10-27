@@ -36,7 +36,8 @@ export const HomeView = () => {
           h='150px'
           fontSize='xl'
           borderRadius='md'
-          variant={'subtle'}>
+          variant={'subtle'}
+          onClick={() => navigate('/game-mode')}>
           Jogar
         </Button>
 
