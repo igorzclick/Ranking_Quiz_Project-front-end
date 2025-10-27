@@ -50,7 +50,14 @@ export const ListThemesView = () => {
     : temas;
 
   const handleCadastrarTema = () => navigate('/themes/create');
-  const handleVoltar = () => navigate(-1);
+  const handleVoltar = () => {
+    // Se veio do game mode, volta para lá, senão volta para home
+    if (localStorage.getItem('gameMode')) {
+      navigate('/game-mode');
+    } else {
+      navigate('/');
+    }
+  };
 
   const handleDeleteTheme = async (id) => {
     deleteTheme(id)
@@ -64,6 +71,28 @@ export const ListThemesView = () => {
           description: error.response?.data?.message || 'Tente novamente',
         });
       });
+  };
+
+  const handleStartGame = (tema) => {
+    // Store selected theme along with game mode
+    if (gameMode) {
+      const gameData = {
+        gameMode,
+        selectedTheme: tema,
+      };
+      localStorage.setItem('gameData', JSON.stringify(gameData));
+      toaster.info({
+        title: 'Preparando jogo...',
+        description: `Modo: ${gameMode.name} | Tema: ${tema.name}`,
+      });
+      // TODO: Navigate to game screen when it's created
+      // navigate('/game');
+    } else {
+      toaster.error({
+        title: 'Modo de jogo não selecionado',
+        description: 'Por favor, selecione um modo de jogo primeiro',
+      });
+    }
   };
 
   useEffect(() => {
@@ -148,7 +177,11 @@ export const ListThemesView = () => {
             </VStack>
 
             <HStack mt={4} spacing={2} wrap={'wrap'}>
-              <Button colorScheme='teal'>Jogar</Button>
+              <Button 
+                colorScheme='teal'
+                onClick={() => handleStartGame(tema)}>
+                Jogar
+              </Button>
               {tema.created_by === userId && (
                 <Button
                   onClick={() => navigate(`/themes/update/${tema.id}`)}

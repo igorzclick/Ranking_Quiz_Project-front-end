@@ -6,12 +6,12 @@ import {
   VStack,
   HStack,
   SimpleGrid,
-  Center,
-  useColorModeValue,
+  
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router';
 import { IoMdPeople, IoIosArrowBack } from 'react-icons/io';
 import { FaCrown } from 'react-icons/fa';
+import{useColorModeValue} from '../../components/ui/color-mode';
 
 const gameModes = [
   {
@@ -53,6 +53,10 @@ export const GameModeView = () => {
   const cardHoverBg = useColorModeValue('gray.700', 'gray.600');
 
   const selectedGameMode = gameModes.find((mode) => mode.id === selectedMode);
+  
+  // Get player info from localStorage
+  const player = JSON.parse(localStorage.getItem('player'));
+  const playerName = player?.username || 'Visitante';
 
   const handleStartGame = () => {
     // Store game mode in localStorage or pass as state
@@ -71,7 +75,7 @@ export const GameModeView = () => {
         <HStack spacing={2}>
           <FaCrown color='#FFD700' />
           <Text fontSize='2xl' fontWeight='bold'>
-            Bem-vindo, Jogador Visitante!
+            Bem-vindo, {playerName}!
           </Text>
         </HStack>
         <Text fontSize='lg' color='gray.400'>
