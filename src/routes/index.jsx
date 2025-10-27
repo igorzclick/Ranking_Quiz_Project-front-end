@@ -3,7 +3,7 @@ import { SignUpView } from '../pages/SignUp/SignUp.view';
 import { HomeView } from '../pages/Home/Home.view';
 import { createBrowserRouter } from 'react-router';
 import { PrivateRouteProvider } from './components/PrivateRouteProvider';
-import { CreateThemeView } from '../pages/CreateTheme/Create-theme.view';
+import { CreateAndUpdateThemeView } from '../pages/CreateAndUpdateTheme/Create-and-update-theme.view';
 import { ListThemesView } from '../pages/ListThemes/List-themes.view';
 import { GameModeView } from '../pages/GameMode/Game-mode.view';
 
@@ -36,7 +36,15 @@ export const router = createBrowserRouter([
     path: '/themes/create',
     element: (
       <PrivateRouteProvider>
-        <CreateThemeView />
+        <CreateAndUpdateThemeView />
+      </PrivateRouteProvider>
+    ),
+  },
+  {
+    path: '/themes/update/:themeId',
+    element: (
+      <PrivateRouteProvider>
+        <CreateAndUpdateThemeView />
       </PrivateRouteProvider>
     ),
   },

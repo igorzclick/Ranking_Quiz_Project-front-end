@@ -5,10 +5,12 @@ export const deleteTheme = async (id) => {
   return response.data;
 };
 
-export async function createTheme({ name, description }) {
-  const response = await api.post('/theme/register', {
+export async function createTheme({ name, description, questions = [] }) {
+  const response = await api.post('/theme/integrated', {
     name,
     description,
+    is_active: true,
+    questions,
   });
   return response.data;
 }
@@ -19,14 +21,16 @@ export async function getThemes() {
 }
 
 export async function getThemeById(id) {
-  const response = await api.get(`/theme/${id}`);
+  const response = await api.get(`/theme/integrated/${id}`);
   return response.data;
 }
 
-export async function updateTheme({ id, name, description }) {
-  const response = await api.put(`/theme/${id}`, {
+export async function updateTheme({ id, name, description, questions = [] }) {
+  const response = await api.put(`/theme/integrated/${id}`, {
     name,
     description,
+    questions,
+    is_active: true,
   });
   return response.data;
 }

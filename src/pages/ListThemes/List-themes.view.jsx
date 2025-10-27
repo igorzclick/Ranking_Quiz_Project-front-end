@@ -31,7 +31,7 @@ export const ListThemesView = () => {
     try {
       setLoading(true);
       const data = await getThemes();
-      setTemas(data.themes || []);
+      setTemas(data?.themes || []);
     } catch (error) {
       toaster.error({
         title: 'Erro ao buscar temas',
@@ -44,9 +44,9 @@ export const ListThemesView = () => {
   };
 
   // Filtrar apenas meus temas
-  const userId = JSON.parse(localStorage.getItem('player')).id;
+  const userId = JSON.parse(localStorage.getItem('player'))?.id;
   const temasFiltrados = mostrarMeusTemas
-    ? temas.filter((t) => t.created_by === userId)
+    ? temas?.filter((t) => t.created_by === userId)
     : temas;
 
   const handleCadastrarTema = () => navigate('/themes/create');
@@ -147,24 +147,24 @@ export const ListThemesView = () => {
               </Text>
             </VStack>
 
-            <HStack mt={4} spacing={2}>
+            <HStack mt={4} spacing={2} wrap={'wrap'}>
               <Button colorScheme='teal'>Jogar</Button>
-              {/* {tema.created_by === userId && (
+              {tema.created_by === userId && (
                 <Button
-                  onClick={() => navigate(`/themes/${tema.id}`)}
+                  onClick={() => navigate(`/themes/update/${tema.id}`)}
                   variant='outline'>
                   Editar
                 </Button>
-              )} */}
+              )}
 
-              {/* {tema.created_by === userId && (
+              {tema.created_by === userId && (
                 <Button
                   onClick={() => handleDeleteTheme(tema.id)}
                   variant='outline'
                   colorScheme='red'>
                   Excluir
                 </Button>
-              )} */}
+              )}
             </HStack>
           </Box>
         ))}
