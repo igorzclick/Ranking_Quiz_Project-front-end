@@ -8,6 +8,7 @@ import {
   Switch,
   Text,
   VStack,
+  Input,
 } from '@chakra-ui/react';
 import React, { useState, useEffect } from 'react';
 import { useColorModeValue } from '../../components/ui/color-mode';
@@ -21,7 +22,8 @@ export const ListThemesView = () => {
   const [mostrarMeusTemas, setMostrarMeusTemas] = useState(false);
   const [temas, setTemas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [gameMode, setGameMode] = useState(null);
+  const [selectedTheme, setSelectedTheme] = useState(null);
+  const [roomTitle, setRoomTitle] = useState('');
 
   const navigate = useNavigate();
   const cardBg = useColorModeValue('gray.700', 'gray.800');
@@ -51,12 +53,7 @@ export const ListThemesView = () => {
 
   const handleCadastrarTema = () => navigate('/themes/create');
   const handleVoltar = () => {
-    // Se veio do game mode, volta para lá, senão volta para home
-    if (localStorage.getItem('gameMode')) {
-      navigate('/game-mode');
-    } else {
-      navigate('/');
-    }
+    navigate('/');
   };
 
   const handleDeleteTheme = async (id) => {
@@ -74,34 +71,27 @@ export const ListThemesView = () => {
   };
 
   const handleStartGame = (tema) => {
-    // Store selected theme along with game mode
-    if (gameMode) {
-      const gameData = {
-        gameMode,
-        selectedTheme: tema,
-      };
-      localStorage.setItem('gameData', JSON.stringify(gameData));
-      toaster.info({
-        title: 'Preparando jogo...',
-        description: `Modo: ${gameMode.name} | Tema: ${tema.name}`,
-      });
-      // TODO: Navigate to game screen when it's created
-      // navigate('/game');
-    } else {
-      toaster.error({
-        title: 'Modo de jogo não selecionado',
-        description: 'Por favor, selecione um modo de jogo primeiro',
-      });
+    setSelectedTheme(tema);
+  };
+
+  const handleCreateRoom = () => {
+    if (!roomTitle.trim()) {
+      toaster.error({ title: 'Informe o título da sala' });
+      return;
     }
+    const room = {
+      id: String(Date.now()),
+      title: roomTitle.trim(),
+      themeId: selectedTheme.id,
+      themeName: selectedTheme.name,
+      createdAt: new Date().toISOString(),
+    };
+    localStorage.setItem('currentRoom', JSON.stringify(room));
+    navigate(`/room/${room.id}`);
   };
 
   useEffect(() => {
     fetchThemes();
-    // Retrieve game mode from localStorage
-    const storedGameMode = localStorage.getItem('gameMode');
-    if (storedGameMode) {
-      setGameMode(JSON.parse(storedGameMode));
-    }
   }, []);
 
   if (loading) return <Text>Carregando temas...</Text>;
@@ -121,17 +111,37 @@ export const ListThemesView = () => {
           <Text fontSize='3xl' fontWeight='bold'>
             Lista de Temas
           </Text>
-          {gameMode && (
-            <Text fontSize='sm' color='gray.400'>
-              Modo de jogo: {gameMode.name} ({gameMode.players} jogador
-              {gameMode.players > 1 ? 'es' : ''})
-            </Text>
-          )}
         </VStack>
         <Button onClick={handleCadastrarTema}>
           <IoAddCircleOutline /> Cadastrar Novo Tema
         </Button>
       </Box>
+
+      {selectedTheme && (
+        <Box
+          mb={6}
+          p={4}
+          borderRadius='md'
+          bg={cardBg}
+          shadow='md'>
+          <VStack align='stretch' spacing={3}>
+            <Text fontWeight='bold'>Criar sala para: {selectedTheme.name}</Text>
+            <Input
+              placeholder='Título da sala'
+              value={roomTitle}
+              onChange={(e) => setRoomTitle(e.target.value)}
+            />
+            <HStack>
+              <Button onClick={() => setSelectedTheme(null)} variant='outline'>
+                Cancelar
+              </Button>
+              <Button colorScheme='purple' onClick={handleCreateRoom}>
+                Criar sala
+              </Button>
+            </HStack>
+          </VStack>
+        </Box>
+      )}
 
       <Field.Root mb={6}>
         <Switch.Root

@@ -90,7 +90,9 @@ export const SignUpView = () => {
     }
   };
 
-  const handleCancel = () => {};
+  const handleCancel = () => {
+    navigate('/login');
+  };
 
   return (
     <Center w='100%' h='100vh' my='10'>

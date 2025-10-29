@@ -5,7 +5,7 @@ import { createBrowserRouter } from 'react-router';
 import { PrivateRouteProvider } from './components/PrivateRouteProvider';
 import { CreateAndUpdateThemeView } from '../pages/CreateAndUpdateTheme/Create-and-update-theme.view';
 import { ListThemesView } from '../pages/ListThemes/List-themes.view';
-import { GameModeView } from '../pages/GameMode/Game-mode.view';
+import { RoomView } from '../pages/Room/Room.view';
 
 export const router = createBrowserRouter([
   {
@@ -49,10 +49,10 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/game-mode',
+    path: '/room/:roomId',
     element: (
       <PrivateRouteProvider>
-        <GameModeView />
+        <RoomView />
       </PrivateRouteProvider>
     ),
   },
