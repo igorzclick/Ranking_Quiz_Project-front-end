@@ -17,6 +17,7 @@ import { IoIosArrowBack } from 'react-icons/io';
 import { useNavigate } from 'react-router';
 import { toaster } from '../../components/ui/toaster';
 import { deleteTheme, getThemes } from '../../apis/theme';
+import { createRoom } from '../../apis/game';
 
 export const ListThemesView = () => {
   const [mostrarMeusTemas, setMostrarMeusTemas] = useState(false);
@@ -80,14 +81,15 @@ export const ListThemesView = () => {
       return;
     }
     const room = {
-      id: String(Date.now()),
-      title: roomTitle.trim(),
-      themeId: selectedTheme.id,
-      themeName: selectedTheme.name,
-      createdAt: new Date().toISOString(),
+      theme_id: selectedTheme.id,
+      game_name: roomTitle.trim(),
+      player_id: userId,
+      points: 0,
     };
-    localStorage.setItem('currentRoom', JSON.stringify(room));
-    navigate(`/room/${room.id}`);
+
+    createRoom(room).then((data) => {
+      navigate(`/room/${data.game.id}`);
+    });
   };
 
   useEffect(() => {
@@ -118,12 +120,7 @@ export const ListThemesView = () => {
       </Box>
 
       {selectedTheme && (
-        <Box
-          mb={6}
-          p={4}
-          borderRadius='md'
-          bg={cardBg}
-          shadow='md'>
+        <Box mb={6} p={4} borderRadius='md' bg={cardBg} shadow='md'>
           <VStack align='stretch' spacing={3}>
             <Text fontWeight='bold'>Criar sala para: {selectedTheme.name}</Text>
             <Input
@@ -187,9 +184,7 @@ export const ListThemesView = () => {
             </VStack>
 
             <HStack mt={4} spacing={2} wrap={'wrap'}>
-              <Button 
-                colorScheme='teal'
-                onClick={() => handleStartGame(tema)}>
+              <Button colorScheme='teal' onClick={() => handleStartGame(tema)}>
                 Jogar
               </Button>
               {tema.created_by === userId && (
