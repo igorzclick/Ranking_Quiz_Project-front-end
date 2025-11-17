@@ -37,7 +37,7 @@ export const HomeView = () => {
           fontSize='xl'
           borderRadius='md'
           variant={'subtle'}
-          onClick={() => navigate('/themes')}>
+          onClick={() => navigate('/room/create')}>
           Jogar
         </Button>
 

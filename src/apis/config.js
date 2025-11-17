@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+// Usa VITE_API_URL, e faz fallback para http://localhost:5000 quando não definido
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL,
 });
 
 // add token de autenticacao nas req

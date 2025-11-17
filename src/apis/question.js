@@ -53,3 +53,8 @@ export async function getQuestions() {
   const response = await api.get('/questions');
   return response.data;
 }
+
+export async function getQuestionsByTheme(themeId) {
+  const response = await api.get(`/questions/theme/${themeId}`);
+  return response.data;
+}

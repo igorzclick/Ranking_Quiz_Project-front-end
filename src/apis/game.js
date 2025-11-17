@@ -21,3 +21,21 @@ export const getRoom = async (game_id) => {
 
   return response.data;
 };
+
+export const startGame = async (game_id) => {
+  const response = await api.post(`/game/${game_id}/start`);
+  return response.data;
+};
+
+export const playTurn = async ({ game_id, question_id, answer_id }) => {
+  const response = await api.post(`/game/${game_id}/play`, {
+    question_id,
+    answer_id,
+  });
+  return response.data;
+};
+
+export const finishGame = async (game_id) => {
+  const response = await api.post(`/game/${game_id}/finish`);
+  return response.data;
+};
