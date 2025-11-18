@@ -17,14 +17,11 @@ import { IoIosArrowBack } from 'react-icons/io';
 import { useNavigate } from 'react-router';
 import { toaster } from '../../components/ui/toaster';
 import { deleteTheme, getThemes } from '../../apis/theme';
-import { createRoom } from '../../apis/game';
 
 export const ListThemesView = () => {
   const [mostrarMeusTemas, setMostrarMeusTemas] = useState(false);
   const [temas, setTemas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedTheme, setSelectedTheme] = useState(null);
-  const [roomTitle, setRoomTitle] = useState('');
 
   const navigate = useNavigate();
   const cardBg = useColorModeValue('gray.700', 'gray.800');
@@ -72,24 +69,7 @@ export const ListThemesView = () => {
   };
 
   const handleStartGame = (tema) => {
-    setSelectedTheme(tema);
-  };
-
-  const handleCreateRoom = () => {
-    if (!roomTitle.trim()) {
-      toaster.error({ title: 'Informe o título da sala' });
-      return;
-    }
-    const room = {
-      theme_id: selectedTheme.id,
-      game_name: roomTitle.trim(),
-      player_id: userId,
-      points: 0,
-    };
-
-    createRoom(room).then((data) => {
-      navigate(`/room/${data.game.id}`);
-    });
+    navigate(`/room/create/${tema.id}`);
   };
 
   useEffect(() => {
@@ -118,27 +98,6 @@ export const ListThemesView = () => {
           <IoAddCircleOutline /> Cadastrar Novo Tema
         </Button>
       </Box>
-
-      {selectedTheme && (
-        <Box mb={6} p={4} borderRadius='md' bg={cardBg} shadow='md'>
-          <VStack align='stretch' spacing={3}>
-            <Text fontWeight='bold'>Criar sala para: {selectedTheme.name}</Text>
-            <Input
-              placeholder='Título da sala'
-              value={roomTitle}
-              onChange={(e) => setRoomTitle(e.target.value)}
-            />
-            <HStack>
-              <Button onClick={() => setSelectedTheme(null)} variant='outline'>
-                Cancelar
-              </Button>
-              <Button colorScheme='purple' onClick={handleCreateRoom}>
-                Criar sala
-              </Button>
-            </HStack>
-          </VStack>
-        </Box>
-      )}
 
       <Field.Root mb={6}>
         <Switch.Root

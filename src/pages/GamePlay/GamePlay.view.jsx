@@ -1,6 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Box, Button, Card, Center, HStack, RadioGroup, Stack, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Card,
+  Center,
+  HStack,
+  RadioGroup,
+  Stack,
+  Text,
+} from '@chakra-ui/react';
 import { getRoom as getGame, playTurn, finishGame } from '../../apis/game';
 import { toaster } from '../../components/ui/toaster';
 
@@ -22,9 +31,14 @@ export const GamePlayView = () => {
         const data = await getGame(Number(gameId));
         setGameData(data);
       } catch (err) {
-        toaster.error({ title: 'Erro ao carregar jogo', description: err?.response?.data?.message || 'Tente novamente' });
+        toaster.error({
+          title: 'Erro ao carregar jogo',
+          description: err?.response?.data?.message || 'Tente novamente',
+        });
       }
     };
+
+    if (!gameId) return;
     load();
   }, [gameId]);
 
@@ -32,13 +46,24 @@ export const GamePlayView = () => {
     if (!currentQuestion) return;
     setLoading(true);
     try {
-      await playTurn({ game_id: Number(gameId), question_id: currentQuestion.id, answer_id: answerId });
+      await playTurn({
+        game_id: Number(gameId),
+        question_id: currentQuestion.id,
+        answer_id: answerId,
+      });
       setAnswers((prev) => ({ ...prev, [currentQuestion.id]: answerId }));
       if (currentIndex + 1 < total) {
         setCurrentIndex((idx) => idx + 1);
       }
+
+      if (currentIndex + 1 === total) {
+        await handleFinish();
+      }
     } catch (err) {
-      toaster.error({ title: 'Erro ao enviar resposta', description: err?.response?.data?.message || 'Tente novamente' });
+      toaster.error({
+        title: 'Erro ao enviar resposta',
+        description: err?.response?.data?.message || 'Tente novamente',
+      });
     } finally {
       setLoading(false);
     }
@@ -50,33 +75,44 @@ export const GamePlayView = () => {
       const result = await finishGame(Number(gameId));
       navigate(`/game/${gameId}/result`, { state: { result } });
     } catch (err) {
-      toaster.error({ title: 'Erro ao finalizar', description: err?.response?.data?.message || 'Responda todas as perguntas' });
+      toaster.error({
+        title: 'Erro ao finalizar',
+        description:
+          err?.response?.data?.message || 'Responda todas as perguntas',
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Center w="100%" h="100vh">
-      <Card.Root width="720px">
-        <Card.Body gap="4">
-          <HStack justifyContent="space-between">
-            <Text fontWeight="bold">{gameData?.game?.game_name}</Text>
-            <Text>{currentIndex + 1}/{total}</Text>
+    <Center w='100%' h='100vh'>
+      <Card.Root width='720px'>
+        <Card.Body gap='4'>
+          <HStack justifyContent='space-between'>
+            <Text fontWeight='bold'>{gameData?.game?.game_name}</Text>
+            <Text>
+              {currentIndex + 1}/{total}
+            </Text>
           </HStack>
 
           {currentQuestion ? (
-            <Stack gap="3">
-              <Text fontSize="lg" fontWeight="medium">{currentQuestion.text}</Text>
-              <Stack gap="2">
+            <Stack gap='3'>
+              <Text fontSize='lg' fontWeight='medium'>
+                {currentQuestion.text}
+              </Text>
+              <Stack gap='2'>
                 {(currentQuestion.answers || []).map((ans) => (
                   <Button
                     key={ans.id}
                     onClick={() => handleAnswer(ans.id)}
-                    variant={answers[currentQuestion.id] === ans.id ? 'surface' : 'subtle'}
+                    variant={
+                      answers[currentQuestion.id] === ans.id
+                        ? 'surface'
+                        : 'subtle'
+                    }
                     isLoading={loading}
-                    disabled={loading}
-                  >
+                    disabled={loading}>
                     {ans.text}
                   </Button>
                 ))}
@@ -86,23 +122,6 @@ export const GamePlayView = () => {
             <Text>Carregando pergunta...</Text>
           )}
         </Card.Body>
-
-        <Card.Footer>
-          <HStack justifyContent="space-between" w="100%">
-            <Button
-              variant="subtle"
-              onClick={() => setCurrentIndex((idx) => Math.max(0, idx - 1))}
-              disabled={currentIndex === 0 || loading}
-            >
-              Voltar
-            </Button>
-            <HStack>
-              {currentIndex + 1 >= total && (
-                <Button onClick={handleFinish} isLoading={loading} disabled={loading}>Finalizar Partida</Button>
-              )}
-            </HStack>
-          </HStack>
-        </Card.Footer>
       </Card.Root>
     </Center>
   );

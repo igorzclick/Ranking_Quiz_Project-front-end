@@ -5,7 +5,6 @@ import { createBrowserRouter } from 'react-router';
 import { PrivateRouteProvider } from './components/PrivateRouteProvider';
 import { CreateAndUpdateThemeView } from '../pages/CreateAndUpdateTheme/Create-and-update-theme.view';
 import { ListThemesView } from '../pages/ListThemes/List-themes.view';
-import { RoomView } from '../pages/Room/Room.view';
 import { RoomCreateView } from '../pages/RoomCreate/RoomCreate.view';
 import { GamePlayView } from '../pages/GamePlay/GamePlay.view';
 import { GameResultView } from '../pages/GameResult/GameResult.view';
@@ -36,7 +35,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/themes/create',
+    path: '/themes/create/',
     element: (
       <PrivateRouteProvider>
         <CreateAndUpdateThemeView />
@@ -52,7 +51,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/room/create',
+    path: '/room/create/:themeId?',
     element: (
       <PrivateRouteProvider>
         <RoomCreateView />
@@ -72,14 +71,6 @@ export const router = createBrowserRouter([
     element: (
       <PrivateRouteProvider>
         <GameResultView />
-      </PrivateRouteProvider>
-    ),
-  },
-  {
-    path: '/room/:roomId',
-    element: (
-      <PrivateRouteProvider>
-        <RoomView />
       </PrivateRouteProvider>
     ),
   },
