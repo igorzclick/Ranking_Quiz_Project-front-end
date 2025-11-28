@@ -1,8 +1,8 @@
-import { Box, Button, Text } from '@chakra-ui/react';
+import { Box, Button, HStack, Text } from '@chakra-ui/react';
 import React from 'react';
 
 export const Header = () => {
-  const player = JSON.parse(localStorage.getItem('player'));
+  const player = JSON.parse(localStorage.getItem('player') || '{}');
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('player');
@@ -15,7 +15,10 @@ export const Header = () => {
       justifyContent={'space-between'}
       my={4}
       alignItems={'center'}>
-      <Text>{player.username}</Text>
+      <HStack spacing={4}>
+        <Text>{player.username}</Text>
+        <Text fontWeight='medium'>Moedas: {player.coins ?? 0}</Text>
+      </HStack>
       <Button onClick={handleLogout} variant={'plain'}>
         Sair
       </Button>

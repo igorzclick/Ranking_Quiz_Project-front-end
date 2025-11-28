@@ -7,8 +7,10 @@ import {
   Input,
   NativeSelect,
   Stack,
+  Box,
 } from '@chakra-ui/react';
 import { useNavigate, useParams } from 'react-router';
+import { IoIosArrowBack } from 'react-icons/io';
 import { toaster } from '../../components/ui/toaster';
 import { getThemes } from '../../apis/theme';
 import { createRoom as createGame, startGame } from '../../apis/game';
@@ -101,11 +103,19 @@ export const RoomCreateView = () => {
     }
   };
 
+  const handleVoltar = () => {
+    navigate('/');
+  };
+
   return (
-    <Center w='100%' h='100vh'>
-      <Card.Root width='640px'>
-        <Card.Body gap='4'>
-          <Card.Title>Criar Sala</Card.Title>
+    <Box p={8} width={'100%'}>
+      <Button onClick={handleVoltar} variant='plain' mb={4}>
+        <IoIosArrowBack /> Voltar
+      </Button>
+      <Center w='100%'>
+        <Card.Root width='640px'>
+          <Card.Body gap='4'>
+            <Card.Title>Criar Sala</Card.Title>
           <Card.Description>
             Defina um título e escolha o tema.
           </Card.Description>
@@ -135,12 +145,13 @@ export const RoomCreateView = () => {
             </Field.Root>
           </Stack>
         </Card.Body>
-        <Card.Footer flex gap='3'>
-          <Button onClick={handleCreateRoom} disabled={loading}>
-            Criar sala
-          </Button>
-        </Card.Footer>
-      </Card.Root>
-    </Center>
+          <Card.Footer flex gap='3'>
+            <Button onClick={handleCreateRoom} disabled={loading}>
+              Criar sala
+            </Button>
+          </Card.Footer>
+        </Card.Root>
+      </Center>
+    </Box>
   );
 };

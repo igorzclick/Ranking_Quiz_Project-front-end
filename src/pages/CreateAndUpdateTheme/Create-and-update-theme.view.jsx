@@ -17,6 +17,19 @@ import { useNavigate, useParams } from 'react-router';
 import { IoIosArrowBack } from 'react-icons/io';
 import { createTheme, getThemeById, updateTheme } from '../../apis/theme';
 
+// Valores padrão por dificuldade
+const DEFAULT_POINTS = {
+  easy: 5,
+  medium: 10,
+  hard: 20,
+};
+
+const DEFAULT_HINT_COST = {
+  easy: 5,
+  medium: 10,
+  hard: 20,
+};
+
 export const CreateAndUpdateThemeView = () => {
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
@@ -25,6 +38,9 @@ export const CreateAndUpdateThemeView = () => {
     descricao: '',
     alternativas: Array(5).fill({ texto: '', correta: false }),
     dificuldade: 'easy',
+    dica: '',
+    custoDica: DEFAULT_HINT_COST.easy,
+    pontos: DEFAULT_POINTS.easy,
   });
   const [loading, setLoading] = useState(false);
 
@@ -55,6 +71,16 @@ export const CreateAndUpdateThemeView = () => {
     });
   };
 
+  // Atualiza dificuldade e ajusta valores padrão
+  const handleDificuldadeChange = (dificuldade) => {
+    setNovaPergunta({
+      ...novaPergunta,
+      dificuldade,
+      pontos: DEFAULT_POINTS[dificuldade],
+      custoDica: DEFAULT_HINT_COST[dificuldade],
+    });
+  };
+
   // Adiciona pergunta à lista
   const adicionarPergunta = () => {
     if (!novaPergunta.descricao.trim()) {
@@ -75,6 +101,9 @@ export const CreateAndUpdateThemeView = () => {
       descricao: '',
       alternativas: Array(5).fill({ texto: '', correta: false }),
       dificuldade: 'easy',
+      dica: '',
+      custoDica: DEFAULT_HINT_COST.easy,
+      pontos: DEFAULT_POINTS.easy,
     });
     toaster.success({ title: 'Pergunta adicionada!' });
   };
@@ -92,15 +121,19 @@ export const CreateAndUpdateThemeView = () => {
         id: themeId,
         name: titulo,
         description: descricao,
-        questions: perguntas.map((pergunta) => ({
-          text: pergunta.descricao,
-          difficulty: pergunta.dificuldade,
-          answers: pergunta.alternativas.map((alternativa, index) => ({
-            text: alternativa.texto,
-            is_correct: alternativa.correta,
-            order: index + 1,
+          questions: perguntas.map((pergunta) => ({
+            text: pergunta.descricao,
+            difficulty: pergunta.dificuldade,
+            explanation: pergunta.dica || undefined,
+            points: Number(pergunta.pontos) || DEFAULT_POINTS[pergunta.dificuldade] || DEFAULT_POINTS.easy,
+            hint: pergunta.dica || undefined,
+            hint_cost: pergunta.dica ? (Number(pergunta.custoDica) || DEFAULT_HINT_COST[pergunta.dificuldade] || DEFAULT_HINT_COST.easy) : undefined,
+            answers: pergunta.alternativas.map((alternativa, index) => ({
+              text: alternativa.texto,
+              is_correct: alternativa.correta,
+              order: index + 1,
+            })),
           })),
-        })),
       })
         .then(() => {
           setLoading(false);
@@ -116,15 +149,19 @@ export const CreateAndUpdateThemeView = () => {
       createTheme({
         name: titulo,
         description: descricao,
-        questions: perguntas.map((pergunta) => ({
-          text: pergunta.descricao,
-          difficulty: pergunta.dificuldade,
-          answers: pergunta.alternativas.map((alternativa, index) => ({
-            text: alternativa.texto,
-            is_correct: alternativa.correta,
-            order: index + 1,
+          questions: perguntas.map((pergunta) => ({
+            text: pergunta.descricao,
+            difficulty: pergunta.dificuldade,
+            explanation: pergunta.dica || undefined,
+            points: Number(pergunta.pontos) || DEFAULT_POINTS[pergunta.dificuldade] || DEFAULT_POINTS.easy,
+            hint: pergunta.dica || undefined,
+            hint_cost: pergunta.dica ? (Number(pergunta.custoDica) || DEFAULT_HINT_COST[pergunta.dificuldade] || DEFAULT_HINT_COST.easy) : undefined,
+            answers: pergunta.alternativas.map((alternativa, index) => ({
+              text: alternativa.texto,
+              is_correct: alternativa.correta,
+              order: index + 1,
+            })),
           })),
-        })),
       })
         .then(() => {
           setLoading(false);
@@ -151,6 +188,9 @@ export const CreateAndUpdateThemeView = () => {
             response.questions.map((pergunta) => ({
               descricao: pergunta.text,
               dificuldade: pergunta.difficulty,
+              dica: pergunta.hint || pergunta.explanation || '',
+              custoDica: pergunta.hint_cost ?? DEFAULT_HINT_COST[pergunta.difficulty] ?? DEFAULT_HINT_COST.easy,
+              pontos: pergunta.points ?? DEFAULT_POINTS[pergunta.difficulty] ?? DEFAULT_POINTS.easy,
               alternativas: pergunta.answers.map((alternativa) => ({
                 texto: alternativa.text,
                 correta: alternativa.is_correct,
@@ -206,6 +246,35 @@ export const CreateAndUpdateThemeView = () => {
             mb={3}
             maxLength={100}
           />
+          
+          <HStack mb={3} spacing={3}>
+            <Box flex={1}>
+              <Textarea
+                placeholder='Dica da pergunta (opcional)'
+                value={novaPergunta.dica}
+                onChange={(e) =>
+                  setNovaPergunta({ ...novaPergunta, dica: e.target.value })
+                }
+                maxLength={200}
+              />
+            </Box>
+            <Box width='150px'>
+              <Text fontSize='sm' mb={1} color='gray.400'>
+                Custo da dica (moedas)
+              </Text>
+              <Input
+                type='number'
+                value={novaPergunta.custoDica}
+                onChange={(e) =>
+                  setNovaPergunta({
+                    ...novaPergunta,
+                    custoDica: Number(e.target.value) || 0,
+                  })
+                }
+                min={0}
+              />
+            </Box>
+          </HStack>
 
           <Text fontWeight='medium' mb={2}>
             Alternativas:
@@ -232,24 +301,30 @@ export const CreateAndUpdateThemeView = () => {
               ))}
             </VStack>
           </RadioGroup.Root>
-          <Text mt={4} fontWeight='medium'>
+          <Text mt={4} fontWeight='medium' mb={2}>
             Dificuldade:
           </Text>
           <NativeSelect.Root>
             <NativeSelect.Field
               value={novaPergunta.dificuldade}
-              onChange={(e) =>
-                setNovaPergunta({
-                  ...novaPergunta,
-                  dificuldade: e.target.value,
-                })
-              }>
-              <option value='easy'>Fácil</option>
-              <option value='medium'>Média</option>
-              <option value='hard'>Difícil</option>
+              onChange={(e) => handleDificuldadeChange(e.target.value)}>
+              <option value='easy'>Fácil - 5 pontos</option>
+              <option value='medium'>Médio - 10 pontos</option>
+              <option value='hard'>Difícil - 20 pontos</option>
             </NativeSelect.Field>
             <NativeSelect.Indicator />
           </NativeSelect.Root>
+          
+          <Box mt={2} p={2} bg='gray.800' borderRadius='md'>
+            <Text fontSize='sm' color='gray.300'>
+              Pontos da pergunta: <Text as='span' fontWeight='bold'>{novaPergunta.pontos}</Text> (padrão para {novaPergunta.dificuldade === 'easy' ? 'Fácil' : novaPergunta.dificuldade === 'medium' ? 'Médio' : 'Difícil'})
+            </Text>
+            {novaPergunta.dica && (
+              <Text fontSize='sm' color='gray.300' mt={1}>
+                Custo da dica: <Text as='span' fontWeight='bold'>{novaPergunta.custoDica}</Text> moedas (padrão para {novaPergunta.dificuldade === 'easy' ? 'Fácil' : novaPergunta.dificuldade === 'medium' ? 'Médio' : 'Difícil'})
+              </Text>
+            )}
+          </Box>
 
           <Button mt={4} colorScheme='teal' onClick={adicionarPergunta}>
             Adicionar Pergunta

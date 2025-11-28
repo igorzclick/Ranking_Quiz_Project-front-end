@@ -39,3 +39,10 @@ export const finishGame = async (game_id) => {
   const response = await api.post(`/game/${game_id}/finish`);
   return response.data;
 };
+
+export const getHint = async ({ game_id, question_id }) => {
+  const response = await api.post(`/game/${game_id}/hint`, {
+    question_id,
+  });
+  return response.data;
+};
